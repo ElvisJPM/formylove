@@ -1,11 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hello</title>
+    <title>Te amo Dibyzais</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 1px solid white;
+        }
+    </style>
 </head>
 <body>
-    <p>si</p>
+    <canvas id="miCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('miCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const numPetalos = 8;
+        const radioPetalo = 100;
+        const radioCentro = radioPetalo / 2;
+        const colorPetalo = 'yellow';
+        const colorCentro = 'orange';
+        const colorTallo = 'green';
+        const colorHoja = 'lightgreen';
+
+        let animacionProgreso = 0;
+        const chispas = [];
+
+        function crearChispa() {
+            chispas.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radio: Math.random() * 3,
+                velocidadX: (Math.random() - 0.5) * 2,
+                velocidadY: (Math.random() - 0.5) * 2,
+                color: `rgba(255, 255, 255, ${Math.random() * 0.5 + 0.5})`
+            });
+        }
+
+        function dibujarChispas() {
+            for (let i = 0; i < chispas.length; i++) {
+                const chispa = chispas[i];
+                ctx.beginPath();
+                ctx.arc(chispa.x, chispa.y, chispa.radio, 0, Math.PI * 2);
+                ctx.fillStyle = chispa.color;
+                ctx.fill();
+
+                chispa.x += chispa.velocidadX;
+                chispa.y += chispa.velocidadY;
+
+                // Eliminar chispas fuera del canvas
+                if (chispa.x < 0 || chispa.x > canvas.width || chispa.y < 0 || chispa.y > canvas.height) {
+                    chispas.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        function dibujarPetalo(anguloRotacion, escala) {
+            ctx.save();
+            ctx.rotate(anguloRotacion);
+            ctx.scale(escala, escala);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(radioPetalo, -radioPetalo / 2, radioPetalo, radioPetalo / 2, 0, radioPetalo);
+            ctx.bezierCurveTo(-radioPetalo, radioPetalo / 2, -radioPetalo, -radioPetalo / 2, 0, 0);
+            ctx.fillStyle = colorPetalo;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function dibujarFlor(escala) {
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            for (let i = 0; i < numPetalos; i++) {
+                dibujarPetalo(Math.PI * 2 / numPetalos * i, escala);
+            }
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, radioCentro * escala, 0, Math.PI * 2);
+            ctx.fillStyle = colorCentro;
+            ctx.fill();
+        }
+
+        function dibujarTallo() {
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, canvas.height / 2 + radioPetalo);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.strokeStyle = colorTallo;
+            ctx.lineWidth = 10;
+            ctx.stroke();
+        }
+
+        function dibujarHoja() {
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2 + radioPetalo + 50);
+            ctx.rotate(Math.PI / 6);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 20, 40, 0, 0, Math.PI * 2);
+            ctx.fillStyle = colorHoja;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function animar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            crearChispa(); // Generar chispas continuamente
+            dibujarChispas();
+            dibujarTallo();
+            dibujarFlor(animacionProgreso);
+            dibujarHoja();
+
+            // Si la animación no ha terminado, continúa incrementando el progreso
+            if (animacionProgreso < 1) {
+                animacionProgreso += 0.002;
+            }
+
+            requestAnimationFrame(animar); // Continuar la animación siempre
+        }
+
+        animar();
+    </script>
 </body>
 </html>
